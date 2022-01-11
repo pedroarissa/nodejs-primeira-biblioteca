@@ -1,27 +1,35 @@
 import chalk from 'chalk';
+import fs from "fs";
 
-const paragrafo = "Texto retornado por uma função";
 
-function texto(string) {
-    return string;
+
+function extraiLinks(texto) {
+    const regex = /\[([^\]]*)\]\((https?:\/\/[^\)]*)\)/gm;
+
+    const arrayResultados = [];
+    let temp;
+    while((temp = regex.exec(texto)) !== null) {
+        arrayResultados.push({[temp[1]]: temp[2]})
+    }
+
+    return arrayResultados.length === 0 ? "Não há links" : arrayResultados;
 }
 
-console.log(texto(paragrafo));
+function trataErro(erro) {
+    throw new Error(chalk.red(erro));
+}
 
-console.log(chalk.blue(paragrafo))
+async function pegaArquivo(caminhoDoArquivo) {
+    const encoding = "utf-8";
+    try {
+        const texto = await fs.promises.readFile(caminhoDoArquivo, encoding)
+        return extraiLinks(texto);
+    } catch(erro) {
+        trataErro(erro)
+    } finally {
+        console.log(chalk.yellow("Operação concluída!"))
+    }
+}
 
-//encadear métodos para colorir texto, cor de fundo e texto em negrito
-console.log(chalk.blue.bgWhite.bold('Alura'));
-
-//receber múltiplos argumentos
-console.log(chalk.blue('curso', 'de', 'NodeJS'));
-
-//métodos aninhados
-console.log(chalk.red('vermelho', chalk.underline.bgBlue('azul')));
-
-// uso de template strings e placeholders
-console.log(`
-CPU: ${chalk.red('90%')}
-RAM: ${chalk.green('40%')}
-DISK: ${chalk.yellow('70%')}
-`);
+export {pegaArquivo};
+export {trataErro};
